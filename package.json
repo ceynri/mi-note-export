@@ -1,0 +1,38 @@
+{
+  "name": "mi-note-export",
+  "version": "0.1.0",
+  "description": "从小米云服务笔记（i.mi.com）批量导出 Markdown 文件",
+  "type": "module",
+  "bin": {
+    "mi-note": "./dist/cli.js"
+  },
+  "files": [
+    "dist/",
+    "skill/",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/cli.js",
+    "dev": "tsc --watch",
+    "postinstall": "npx playwright install chromium --with-deps 2>/dev/null || echo '⚠️ Playwright chromium 安装失败，请手动运行: npx playwright install chromium'"
+  },
+  "dependencies": {
+    "playwright": "^1.52.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "@types/node": "^22.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "license": "MIT",
+  "keywords": [
+    "xiaomi",
+    "mi-note",
+    "note-export",
+    "markdown",
+    "backup"
+  ]
+}
