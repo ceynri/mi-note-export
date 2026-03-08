@@ -9,7 +9,7 @@ import {
   getSyncStateFile,
   ensureDir,
 } from "./utils.js";
-import type { RawNoteEntry, NoteFolder, SyncState } from "./types.js";
+import type { RawNoteEntry, SyncState } from "./types.js";
 
 const SAVE_INTERVAL = 10;
 
@@ -34,7 +34,7 @@ export async function syncNotes(
   }
 
   // 拉取笔记列表
-  const { entries, folders } = await getAllNotes(cookie);
+  const { entries, folders, syncTag } = await getAllNotes(cookie);
 
   // 确保输出目录存在
   await ensureDir(outputDir);
@@ -152,6 +152,7 @@ export async function syncNotes(
   // 保存最终状态
   state.lastSync = Date.now();
   state.folders = folders;
+  state.syncTag = syncTag;
   await saveState(state, outputDir);
 
   console.log(`\n

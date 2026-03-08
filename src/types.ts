@@ -70,4 +70,5 @@ export interface SyncState {
   notes: Record<string, SyncNoteState>;
   folders: Record<string, NoteFolder>;
   lastSync: number | null;
+  syncTag?: string;
 }

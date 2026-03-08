@@ -47,7 +47,7 @@ async function fetchNotePage(
 export async function getAllNotes(
   cookie: string,
   limit = 200,
-): Promise<{ entries: RawNoteEntry[]; folders: Record<string, NoteFolder> }> {
+): Promise<{ entries: RawNoteEntry[]; folders: Record<string, NoteFolder>; syncTag: string }> {
   let syncTag = "";
   const allEntries: RawNoteEntry[] = [];
   const allFolders: Record<string, NoteFolder> = {};
@@ -76,7 +76,7 @@ export async function getAllNotes(
 
   console.log(`\r📋 共获取 ${allEntries.length} 条笔记`);
 
-  return { entries: allEntries, folders: allFolders };
+  return { entries: allEntries, folders: allFolders, syncTag };
 }
 
 /**
@@ -207,12 +207,13 @@ function extractServiceToken(cookie: string): string {
 export async function deleteNote(
   cookie: string,
   noteId: string,
+  syncTag: string,
 ): Promise<void> {
   const serviceToken = extractServiceToken(cookie);
 
   const url = `${API_BASE}/note/full/${noteId}/delete`;
   const body = new URLSearchParams({
-    tag: noteId,
+    tag: syncTag,
     purge: "false",
     serviceToken,
   });
