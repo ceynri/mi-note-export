@@ -26,12 +26,22 @@ const MEDIA_TAG_FORMATS: { tag: string; format: (name: string, path: string) => 
   { tag: "video", format: (name, path) => `[🎬 ${name}](${path})` },
 ];
 
-/** 标题标签到 Markdown 标记的映射 */
-const HEADING_TAGS: { tag: string; prefix: string }[] = [
+/** 标题标签到 Markdown 标记的映射（含预编译正则） */
+const HEADING_TAGS: {
+  tag: string;
+  prefix: string;
+  matchRegex: RegExp;
+  inlineRegex: RegExp;
+}[] = [
   { tag: "size", prefix: "#" },
   { tag: "mid-size", prefix: "##" },
   { tag: "h3-size", prefix: "###" },
-];
+].map(({ tag, prefix }) => ({
+  tag,
+  prefix,
+  matchRegex: new RegExp(`^<${tag}>([\\s\\S]*?)</${tag}>$`),
+  inlineRegex: new RegExp(`<${tag}>([\\s\\S]*?)</${tag}>`, "g"),
+}));
 
 const LIST_TYPES = ["checkbox", "bullet", "order"];
 
@@ -294,8 +304,8 @@ function formatListItem(
 function tryParseHeading(content: string): ParsedLine | null {
   const trimmed = content.trim();
 
-  for (const { tag, prefix } of HEADING_TAGS) {
-    const match = trimmed.match(new RegExp(`^<${tag}>([\\s\\S]*?)</${tag}>$`));
+  for (const { prefix, matchRegex } of HEADING_TAGS) {
+    const match = trimmed.match(matchRegex);
     if (match) {
       return {
         type: "heading",
@@ -330,8 +340,8 @@ function convertInlineStyles(text: string): string {
     },
   );
   // 行内标题标签（非独占一行时，当作粗体处理）
-  for (const { tag } of HEADING_TAGS) {
-    text = text.replace(new RegExp(`<${tag}>([\\s\\S]*?)</${tag}>`, "g"), "**$1**");
+  for (const { inlineRegex } of HEADING_TAGS) {
+    text = text.replace(inlineRegex, "**$1**");
   }
 
   return text;

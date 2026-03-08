@@ -123,24 +123,36 @@ export async function downloadFile(
 
   const url = `${API_BASE}/file/full?${params}`;
 
-  try {
-    const resp = await fetch(url, {
-      headers: buildHeaders(cookie),
-      redirect: "follow",
-    });
+  const maxRetries = 2;
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      const resp = await fetch(url, {
+        headers: buildHeaders(cookie),
+        redirect: "follow",
+      });
 
-    if (!resp.ok) {
-      console.warn(`\n⚠️ 下载附件失败 (${resp.status}): ${fileId}`);
+      if (!resp.ok) {
+        if (attempt < maxRetries) {
+          await delay(500 * (attempt + 1));
+          continue;
+        }
+        console.warn(`\n⚠️ 下载附件失败 (${resp.status}): ${fileId}`);
+        return;
+      }
+
+      const buffer = Buffer.from(await resp.arrayBuffer());
+      await ensureFileDir(savePath);
+      await writeFile(savePath, buffer);
       return;
+    } catch (err) {
+      if (attempt < maxRetries) {
+        await delay(500 * (attempt + 1));
+        continue;
+      }
+      console.warn(
+        `\n⚠️ 下载附件异常: ${fileId} - ${(err as Error).message}`,
+      );
     }
-
-    const buffer = Buffer.from(await resp.arrayBuffer());
-    await ensureFileDir(savePath);
-    await writeFile(savePath, buffer);
-  } catch (err) {
-    console.warn(
-      `\n⚠️ 下载附件异常: ${fileId} - ${(err as Error).message}`,
-    );
   }
 }
 
@@ -157,14 +169,18 @@ async function fetchWithRetry(
       headers: buildHeaders(cookie),
     });
 
-    if (resp.status === 401 && retries > 0) {
-      await delay(500);
-      return fetchWithRetry(url, cookie, retries - 1);
+    if (resp.status === 401) {
+      throw new Error(
+        "Cookie 已过期，请重新登录（运行 --login）",
+      );
     }
 
     if (!resp.ok) return null;
     return resp;
   } catch (err) {
+    if ((err as Error).message.includes("Cookie 已过期")) {
+      throw err;
+    }
     if (retries > 0) {
       await delay(500);
       return fetchWithRetry(url, cookie, retries - 1);

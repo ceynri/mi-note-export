@@ -1,17 +1,26 @@
 #!/usr/bin/env node
 
 import { createInterface } from "node:readline";
+import { createRequire } from "node:module";
 import { parseArgs, printHelp } from "./utils.js";
 import { ensureCookie } from "./auth.js";
 import { syncNotes, removeNoteFromState } from "./sync.js";
 import { getNoteDetail, deleteNote } from "./api.js";
 import { parseNoteEntry } from "./converter.js";
 
+const require = createRequire(import.meta.url);
+const { version } = require("../package.json") as { version: string };
+
 async function main(): Promise<void> {
   const args = parseArgs(process.argv);
 
   if (args.help) {
     printHelp();
+    process.exit(0);
+  }
+
+  if (args.version) {
+    console.log(version);
     process.exit(0);
   }
 
@@ -28,7 +37,11 @@ async function main(): Promise<void> {
       await syncNotes(cookie, outputDir, args.force);
     }
   } catch (err) {
-    console.error(`\n❌ 出错了: ${(err as Error).message}`);
+    const error = err as Error;
+    console.error(`\n❌ 出错了: ${error.message}`);
+    if (error.stack) {
+      console.error(`\n${error.stack}`);
+    }
     process.exit(1);
   }
 }

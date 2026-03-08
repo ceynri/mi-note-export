@@ -11,6 +11,8 @@ export function sanitizeFileName(name: string): string {
   return name
     .replace(/[<>:"/\\|?*\x00-\x1f]/g, "_")
     .replace(/\s+/g, " ")
+    .replace(/^\.+/, "")
+    .replace(/[.\s]+$/, "")
     .trim()
     .slice(0, 200);
 }
@@ -97,6 +99,7 @@ export function getSyncStateFile(outputDir: string): string {
 
 export interface CliArgs {
   help: boolean;
+  version: boolean;
   force: boolean;
   output: string | null;
   login: boolean;
@@ -111,6 +114,7 @@ export function parseArgs(argv: string[]): CliArgs {
   const args = argv.slice(2);
   const result: CliArgs = {
     help: false,
+    version: false,
     force: false,
     output: null,
     login: false,
@@ -118,11 +122,25 @@ export function parseArgs(argv: string[]): CliArgs {
     yes: false,
   };
 
+  const knownFlags = new Set([
+    "--help", "-h",
+    "--version", "-v",
+    "--force", "-f",
+    "--output", "-o",
+    "--login",
+    "--delete-id",
+    "--yes", "-y",
+  ]);
+
   for (let i = 0; i < args.length; i++) {
     switch (args[i]) {
       case "--help":
       case "-h":
         result.help = true;
+        break;
+      case "--version":
+      case "-v":
+        result.version = true;
         break;
       case "--force":
       case "-f":
@@ -142,6 +160,11 @@ export function parseArgs(argv: string[]): CliArgs {
       case "-y":
         result.yes = true;
         break;
+      default:
+        if (args[i].startsWith("-") && !knownFlags.has(args[i])) {
+          console.warn(`⚠️ 未知参数: ${args[i]}`);
+        }
+        break;
     }
   }
 
@@ -159,6 +182,7 @@ export function printHelp(): void {
 
 选项:
   -h, --help         显示帮助信息
+  -v, --version      显示版本号
   -f, --force        强制重新同步所有笔记（忽略增量状态）
   -o, --output       指定输出目录（默认: ./output）
   --login            强制重新登录（忽略缓存的 Cookie）

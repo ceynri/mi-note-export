@@ -9,6 +9,8 @@ const NOTE_API_BASE = "https://i.mi.com/note/full/page/";
 const LOGIN_TIMEOUT = 300_000;
 const POLL_INTERVAL = 2_000;
 
+const CHROME_VERSION = "131";
+
 /**
  * 确保有有效的 Cookie
  * - 如果有缓存且有效，直接返回
@@ -135,12 +137,12 @@ export function buildHeaders(cookie: string): Record<string, string> {
     Referer: "https://i.mi.com/note/h5",
     Origin: "https://i.mi.com",
     "User-Agent":
-      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+      `Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${CHROME_VERSION}.0.0.0 Safari/537.36`,
     Accept: "application/json, text/plain, */*",
     "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
     "Accept-Encoding": "gzip, deflate, br",
     "sec-ch-ua":
-      '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
+      `"Google Chrome";v="${CHROME_VERSION}", "Chromium";v="${CHROME_VERSION}", "Not_A Brand";v="24"`,
     "sec-ch-ua-mobile": "?0",
     "sec-ch-ua-platform": '"macOS"',
     "Sec-Fetch-Dest": "empty",
