@@ -25,7 +25,7 @@ provider:
 
 修改 CLI 选项、数据路径、输出格式等用户可感知的行为后，必须同步更新：
 
-- `README.md` 中的对应章节
+- `README.md` 和 `README.zh-CN.md` 中的对应章节
 - `skills/mi-note-export/SKILL.md` 中的对应描述
 
 ## 单元测试
