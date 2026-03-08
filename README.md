@@ -1,129 +1,131 @@
+English | [简体中文](./README.zh-CN.md)
+
 # mi-note-export
 
-从小米云服务笔记（i.mi.com）批量导出所有笔记为 Markdown 文件。
+Batch export all notes from Xiaomi Cloud Notes (i.mi.com) as Markdown files.
 
-## 功能
+## Features
 
-- 自动拉取全部笔记并转换为 Markdown
-- 保留标题、列表、复选框、引用、分割线等格式
-- 下载图片、音频、视频等附件
-- 增量同步（仅拉取新增/修改的笔记）
-- 自动清理云端已删除的笔记
-- 删除指定云端笔记（移到回收站）
-- 按文件夹分目录存放
-- Cookie 缓存 + 浏览器身份持久化，减少重复登录
+- Automatically fetch all notes and convert to Markdown
+- Preserve headings, lists, checkboxes, blockquotes, horizontal rules, etc.
+- Download attachments (images, audio, video)
+- Incremental sync (only fetch new/modified notes)
+- Automatically clean up notes deleted from the cloud
+- Delete specific cloud notes (move to trash)
+- Organize notes by folder
+- Cookie caching + browser identity persistence to reduce repeated logins
 
 ## AI Skill
 
-本项目提供了 AI 编程助手的 Skill 定义文件，可让 AI 助手直接帮你执行笔记导出操作：
+This project provides an AI coding assistant Skill definition file that enables AI assistants to perform note export operations for you:
 
 ```bash
 npx skills add ceynri/mi-note-export
 ```
 
-也可手动将 `skills/mi-note-export/SKILL.md` 复制到你的项目的 Skill 目录中。
+You can also manually copy `skills/mi-note-export/SKILL.md` to your project's Skill directory.
 
-## 安装
+## Installation
 
-全局安装：
+Global installation:
 
 ```bash
 npm install -g mi-note-export
 ```
 
-或安装为项目开发依赖：
+Or install as a project dev dependency:
 
 ```bash
 npm install -D mi-note-export
 ```
 
-> 安装时会自动下载 Playwright Chromium（约 200+ MB）。如果自动安装失败，可手动执行 `npx playwright install chromium`。
+> Playwright Chromium (~200+ MB) will be automatically downloaded during installation. If auto-installation fails, run `npx playwright install chromium` manually.
 
-## 使用
+## Usage
 
 ```bash
-mi-note              # 增量同步
-mi-note --force      # 全量重新同步
-mi-note --login      # 强制重新登录
-mi-note -o ./notes   # 指定输出目录
+mi-note              # Incremental sync
+mi-note --force      # Full re-sync
+mi-note --login      # Force re-login
+mi-note -o ./notes   # Specify output directory
 ```
 
-也可以不安装，通过 `npx` 直接运行：
+Or run directly via `npx` without installing:
 
 ```bash
 npx mi-note-export
 ```
 
-## 选项
+## Options
 
-| 选项 | 说明 |
+| Option | Description |
 |---|---|
-| `-h, --help` | 显示帮助信息 |
-| `-f, --force` | 全量重新同步（忽略增量状态） |
-| `-o, --output <dir>` | 指定输出目录（默认 `output`） |
-| `--login` | 强制重新登录（忽略缓存的 Cookie） |
-| `--delete-id <id>` | 删除指定 ID 的云端笔记（移到回收站，30 天内可恢复） |
-| `-y, --yes` | 跳过确认提示，直接执行 |
-| `-v, --version` | 显示版本号 |
+| `-h, --help` | Show help |
+| `-f, --force` | Full re-sync (ignore incremental state) |
+| `-o, --output <dir>` | Specify output directory (default: `output`) |
+| `--login` | Force re-login (ignore cached Cookie) |
+| `--delete-id <id>` | Delete a cloud note by ID (moves to trash, recoverable within 30 days) |
+| `-y, --yes` | Skip confirmation prompts |
+| `-v, --version` | Show version |
 
-## 认证流程
+## Authentication Flow
 
-1. **首次运行**：通过 Playwright 打开 Chromium 浏览器 → 用户手动登录小米账号 → 自动提取并缓存 Cookie
-2. **后续运行**：读取缓存的 Cookie → 验证有效性 → 有效则直接使用，过期则自动打开浏览器重新登录
+1. **First run**: Opens a Chromium browser via Playwright → user manually logs in to Xiaomi account → Cookie is automatically extracted and cached
+2. **Subsequent runs**: Reads cached Cookie → validates it → uses it if valid, otherwise opens browser for re-login
 
-浏览器身份数据持久化在系统缓存目录（见下方"数据目录"说明），后续登录时小米会识别为同一设备，通常不再要求手机验证码。
+Browser identity data is persisted in the system cache directory (see "Data Directory" below). Xiaomi will recognize it as the same device on subsequent logins, usually without requiring SMS verification.
 
-## 输出结构
+## Output Structure
 
 ```
 output/
-├── assets/              # 附件（图片、音频等）
-├── 文件夹名/            # 笔记所属文件夹（如有）
-│   └── 笔记标题.md
-├── 笔记标题.md          # 有标题的笔记
-└── 2025-01-01_12-00-00.md  # 无标题笔记，以创建时间命名
+├── assets/                    # Attachments (images, audio, etc.)
+├── folder-name/               # Note folder (if any)
+│   └── note-title.md
+├── note-title.md              # Notes with titles
+└── 2025-01-01_12-00-00.md     # Untitled notes, named by creation time
 ```
 
-## 数据目录
+## Data Directory
 
-工具运行时会在当前工作目录下创建 `.mi-note-export/` 目录，存放：
+The tool creates a `.mi-note-export/` directory in the current working directory, containing:
 
-- `.cookie` — 缓存的登录 Cookie
-- `.browser-data/` — Playwright 浏览器持久化数据
-- `.sync-state.json` — 增量同步状态
+- `.cookie` — Cached login Cookie
+- `.browser-data/` — Playwright browser persistence data
+- `.sync-state.json` — Incremental sync state
 
-> 建议将 `.mi-note-export/` 加入项目的 `.gitignore`。
+> It's recommended to add `.mi-note-export/` to your project's `.gitignore`.
 
-## 已知限制
+## Known Limitations
 
-- 不支持私密笔记、待办事项和思维导图
-- Cookie 有效期有限（通常数天），过期后需重新登录
-- 空笔记（无标题且无内容）会被自动跳过
+- Private notes, todos, and mind maps are not supported
+- Cookie has a limited lifespan (typically a few days); re-login is required after expiration
+- Empty notes (no title and no content) are automatically skipped
 
-## 开发
+## Development
 
 ```bash
-pnpm install       # 安装依赖
-pnpm build         # 编译 TypeScript
-pnpm dev           # 监听模式编译
-pnpm start         # 运行
+pnpm install       # Install dependencies
+pnpm build         # Compile TypeScript
+pnpm dev           # Watch mode compilation
+pnpm start         # Run
 ```
 
-## 项目结构
+## Project Structure
 
 ```
 mi-note-export/
 ├── src/
-│   ├── cli.ts        # CLI 入口
-│   ├── auth.ts       # Cookie 获取、缓存、验证
-│   ├── api.ts        # 小米云笔记 API 封装
-│   ├── converter.ts  # 笔记内容解析与 Markdown 转换
-│   ├── sync.ts       # 增量同步逻辑与状态管理
-│   ├── types.ts      # 类型定义
-│   └── utils.ts      # 通用工具函数
-├── .agents/          # AI 编程助手配置（rules/agents）
-├── skills/           # AI Skill 发布源（供 npx skills add 安装）
-├── dist/             # 编译产物（git ignored）
+│   ├── cli.ts        # CLI entry point
+│   ├── auth.ts       # Cookie retrieval, caching, validation
+│   ├── api.ts        # Xiaomi Cloud Notes API wrapper
+│   ├── converter.ts  # Note content parsing & Markdown conversion
+│   ├── sync.ts       # Incremental sync logic & state management
+│   ├── types.ts      # Type definitions
+│   └── utils.ts      # Utility functions
+├── .agents/          # AI assistant configuration (rules/agents)
+├── skills/           # AI Skill source (for npx skills add)
+├── dist/             # Build output (git ignored)
 ├── tsconfig.json
 └── package.json
 ```
