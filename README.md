@@ -111,7 +111,9 @@ mi-note-export/
 │   ├── sync.ts       # 增量同步逻辑与状态管理
 │   ├── types.ts      # 类型定义
 │   └── utils.ts      # 通用工具函数
-├── SKILL.md          # AI 编程助手 Skill 定义
+├── skills/
+│   └── mi-note-export/
+│       └── SKILL.md  # AI 编程助手 Skill 定义
 ├── dist/             # 编译产物（git ignored）
 ├── tsconfig.json
 └── package.json
@@ -119,7 +121,7 @@ mi-note-export/
 
 ## AI Skill
 
-本项目提供了 AI 编程助手的 Skill 定义文件（`SKILL.md`），可让 AI 助手直接帮你执行笔记导出操作。
+本项目提供了 AI 编程助手的 Skill 定义文件（`skills/mi-note-export/SKILL.md`），可让 AI 助手直接帮你执行笔记导出操作。
 
 通过 `npx skills add ceynri/mi-note-export` 安装，或手动将 `SKILL.md` 复制到你的项目的 Skill 目录中即可使用。
 
