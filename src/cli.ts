@@ -2,7 +2,8 @@
 
 import { createInterface } from "node:readline";
 import { createRequire } from "node:module";
-import { parseArgs, printHelp } from "./utils.js";
+import { rm } from "node:fs/promises";
+import { parseArgs, printHelp, getCacheDir, fileExists, loadConfigFile } from "./utils.js";
 import { ensureCookie } from "./auth.js";
 import { syncNotes, removeNoteFromState } from "./sync.js";
 import { getNoteDetail, deleteNote } from "./api.js";
@@ -24,16 +25,21 @@ async function main(): Promise<void> {
     process.exit(0);
   }
 
+  if (args.clearCache) {
+    await handleClearCache(args.yes);
+    process.exit(0);
+  }
+
   console.log("🚀 小米云笔记导出工具\n");
 
   try {
     const cookie = await ensureCookie(args.login);
+    const config = await loadConfigFile();
+    const outputDir = args.output || config.output || "output";
 
     if (args.deleteId) {
-      const outputDir = args.output || "output";
       await handleDelete(cookie, args.deleteId, outputDir, args.yes);
     } else {
-      const outputDir = args.output || "output";
       await syncNotes(cookie, outputDir, args.force);
     }
   } catch (err) {
@@ -82,6 +88,28 @@ async function handleDelete(
   await removeNoteFromState(noteId, outputDir);
 
   console.log("✅ 笔记已移到回收站（30 天内可在小米云服务中恢复）");
+}
+
+async function handleClearCache(skipConfirm = false): Promise<void> {
+  const cacheDir = getCacheDir();
+
+  if (!(await fileExists(cacheDir))) {
+    console.log("ℹ️  缓存目录不存在，无需清理");
+    return;
+  }
+
+  console.log(`📁 缓存目录: ${cacheDir}`);
+
+  if (!skipConfirm) {
+    const confirmed = await confirm("确认要清除所有缓存数据吗？(y/N) ");
+    if (!confirmed) {
+      console.log("已取消");
+      return;
+    }
+  }
+
+  await rm(cacheDir, { recursive: true, force: true });
+  console.log("✅ 缓存已清除（下次运行需要重新登录）");
 }
 
 function confirm(question: string): Promise<boolean> {

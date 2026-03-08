@@ -1,6 +1,9 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { sanitizeFileName, formatDateTime, parseArgs } from "../src/utils.js";
+import { sanitizeFileName, formatDateTime, parseArgs, loadConfigFile } from "../src/utils.js";
+import { writeFile, mkdir, rm } from "node:fs/promises";
+import { join } from "node:path";
+import { tmpdir } from "node:os";
 
 describe("sanitizeFileName", () => {
   it("should replace illegal characters", () => {
@@ -108,6 +111,11 @@ describe("parseArgs", () => {
     assert.equal(args.output, "./out");
   });
 
+  it("should parse --clear-cache", () => {
+    const args = parseArgs(["node", "cli", "--clear-cache"]);
+    assert.equal(args.clearCache, true);
+  });
+
   it("should have correct defaults", () => {
     const args = parseArgs(["node", "cli"]);
     assert.equal(args.help, false);
@@ -117,5 +125,31 @@ describe("parseArgs", () => {
     assert.equal(args.login, false);
     assert.equal(args.deleteId, null);
     assert.equal(args.yes, false);
+    assert.equal(args.clearCache, false);
+  });
+});
+
+describe("loadConfigFile", () => {
+  const testDir = join(tmpdir(), `mi-note-export-test-${Date.now()}`);
+
+  it("should return empty object when config file does not exist", async () => {
+    const config = await loadConfigFile(testDir);
+    assert.deepEqual(config, {});
+  });
+
+  it("should read output from config file", async () => {
+    await mkdir(testDir, { recursive: true });
+    await writeFile(join(testDir, ".mi-note-export.json"), JSON.stringify({ output: "./my-notes" }));
+    const config = await loadConfigFile(testDir);
+    assert.equal(config.output, "./my-notes");
+    await rm(testDir, { recursive: true, force: true });
+  });
+
+  it("should return empty object for invalid JSON", async () => {
+    await mkdir(testDir, { recursive: true });
+    await writeFile(join(testDir, ".mi-note-export.json"), "not json");
+    const config = await loadConfigFile(testDir);
+    assert.deepEqual(config, {});
+    await rm(testDir, { recursive: true, force: true });
   });
 });

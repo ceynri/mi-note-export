@@ -1,4 +1,4 @@
-import { mkdir, access } from "node:fs/promises";
+import { mkdir, access, readFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { homedir, platform } from "node:os";
 
@@ -97,6 +97,27 @@ export function getSyncStateFile(outputDir: string): string {
   return join(outputDir, ".sync-state.json");
 }
 
+const CONFIG_FILE_NAME = ".mi-note-export.json";
+
+export interface ProjectConfig {
+  output?: string;
+}
+
+/**
+ * 从当前工作目录读取项目配置文件
+ *
+ * 配置文件路径: `<cwd>/.mi-note-export.json`
+ */
+export async function loadConfigFile(cwd = process.cwd()): Promise<ProjectConfig> {
+  const configPath = join(cwd, CONFIG_FILE_NAME);
+  try {
+    const content = await readFile(configPath, "utf-8");
+    return JSON.parse(content) as ProjectConfig;
+  } catch {
+    return {};
+  }
+}
+
 export interface CliArgs {
   help: boolean;
   version: boolean;
@@ -105,6 +126,7 @@ export interface CliArgs {
   login: boolean;
   deleteId: string | null;
   yes: boolean;
+  clearCache: boolean;
 }
 
 /**
@@ -120,6 +142,7 @@ export function parseArgs(argv: string[]): CliArgs {
     login: false,
     deleteId: null,
     yes: false,
+    clearCache: false,
   };
 
   const knownFlags = new Set([
@@ -130,6 +153,7 @@ export function parseArgs(argv: string[]): CliArgs {
     "--login",
     "--delete-id",
     "--yes", "-y",
+    "--clear-cache",
   ]);
 
   for (let i = 0; i < args.length; i++) {
@@ -160,6 +184,9 @@ export function parseArgs(argv: string[]): CliArgs {
       case "-y":
         result.yes = true;
         break;
+      case "--clear-cache":
+        result.clearCache = true;
+        break;
       default:
         if (args[i].startsWith("-") && !knownFlags.has(args[i])) {
           console.warn(`⚠️ 未知参数: ${args[i]}`);
@@ -184,9 +211,10 @@ export function printHelp(): void {
   -h, --help         显示帮助信息
   -v, --version      显示版本号
   -f, --force        强制重新同步所有笔记（忽略增量状态）
-  -o, --output       指定输出目录（默认: ./output）
+  -o, --output       指定输出目录（默认读取 .mi-note-export.json，否则 ./output）
   --login            强制重新登录（忽略缓存的 Cookie）
   --delete-id <id>   删除指定 ID 的云端笔记（移到回收站）
   -y, --yes          跳过确认提示，直接执行
+  --clear-cache      清除系统缓存目录（Cookie 和浏览器数据）
 `);
 }
