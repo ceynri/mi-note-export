@@ -46,7 +46,6 @@ npm install -D mi-note-export
 ```bash
 mi-note              # Incremental sync
 mi-note --force      # Full re-sync
-mi-note --login      # Force re-login
 mi-note -o ./notes   # Specify output directory
 ```
 
@@ -62,9 +61,10 @@ npx mi-note-export
 |---|---|
 | `-h, --help` | Show help |
 | `-f, --force` | Full re-sync (ignore incremental state) |
-| `-o, --output <dir>` | Specify output directory (default: `output`) |
+| `-o, --output <dir>` | Specify output directory (default: reads from `.mi-note-export.json`, otherwise `output`) |
 | `--login` | Force re-login (ignore cached Cookie) |
 | `--delete-id <id>` | Delete a cloud note by ID (moves to trash, recoverable within 30 days) |
+| `--clear-cache` | Clear system cache directory (Cookie and browser data) |
 | `-y, --yes` | Skip confirmation prompts |
 | `-v, --version` | Show version |
 
@@ -86,15 +86,36 @@ output/
 └── 2025-01-01_12-00-00.md     # Untitled notes, named by creation time
 ```
 
+## Configuration File
+
+You can create a `.mi-note-export.json` file in the current working directory to avoid specifying `-o` every time:
+
+```json
+{ "output": "./my-notes" }
+```
+
+Output directory priority: `-o` CLI argument > `.mi-note-export.json` > default `output`.
+
 ## Data Directory
 
-The tool creates a `.mi-note-export/` directory in the current working directory, containing:
+### System Cache Directory
 
-- `.cookie` — Cached login Cookie
-- `.browser-data/` — Playwright browser persistence data
-- `.sync-state.json` — Incremental sync state
+Cookie and Playwright browser persistence data are stored in the system cache directory:
 
-> It's recommended to add `.mi-note-export/` to your project's `.gitignore`.
+- **macOS**: `~/Library/Caches/mi-note-export/`
+- **Linux**: `$XDG_CACHE_HOME/mi-note-export/` or `~/.cache/mi-note-export/`
+- **Windows**: `%LOCALAPPDATA%/mi-note-export/cache/`
+
+Contents:
+
+- `cookie` — Cached login Cookie
+- `browser-data/` — Playwright browser persistence data (device identity preserved to reduce re-verification)
+
+### Output Directory
+
+The incremental sync state file is stored inside the output directory:
+
+- `<output>/.sync-state.json` — Tracks synced notes and their modification dates
 
 ## Known Limitations
 

@@ -11,25 +11,27 @@ description: 从小米云服务笔记批量导出 Markdown 文件，支持删除
 
 执行前需确定笔记的输出目录。按优先级查找：
 
-1. 读取项目根目录下的 `.mi-note-export.json` 配置文件中的 `output` 字段
+1. 读取项目根目录下的 `.mi-note-export.json` 配置文件中的 `output` 字段（CLI 原生支持）
 2. 如果配置文件不存在（首次使用），向用户确认输出目录（建议默认 `./mi-notes`），确认后将配置写入 `.mi-note-export.json`：
    ```json
    { "output": "./mi-notes" }
    ```
 
-后续执行时直接读取该配置，无需再次询问。
+后续执行时 CLI 会自动读取该配置，无需再次询问或手动传 `-o`。
 
 ## 使用
 
-通过 `npx` 直接执行，无需提前安装。始终通过 `-o` 指定上一步确定的输出目录：
+通过 `npx` 直接执行，无需提前安装。如已配置 `.mi-note-export.json`，可省略 `-o`：
 
 ```bash
-npx mi-note-export -o <output>                 # 增量同步
-npx mi-note-export -o <output> --force         # 全量重新同步
-npx mi-note-export -o <output> --login         # 强制重新登录
-npx mi-note-export -o <output> --delete-id <noteId>        # 删除指定云端笔记（交互确认）
-npx mi-note-export -o <output> --delete-id <noteId> --yes  # 删除指定云端笔记（跳过确认）
+npx mi-note-export                          # 增量同步（使用配置文件中的输出目录）
+npx mi-note-export -o <output>              # 增量同步（手动指定输出目录）
+npx mi-note-export --force                  # 全量重新同步
+npx mi-note-export --delete-id <noteId> -y  # 删除指定云端笔记
+npx mi-note-export --help                   # 查看所有可用选项
 ```
+
+遇到其他不适用以上指令的场景时，优先通过 `--help` 查阅是否有合适的选项。
 
 > ⚠️ 首次执行时会自动下载工具及其依赖 Playwright Chromium（约 200+ MB），需提醒用户确认。
 

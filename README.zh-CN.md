@@ -46,7 +46,6 @@ npm install -D mi-note-export
 ```bash
 mi-note              # 增量同步
 mi-note --force      # 全量重新同步
-mi-note --login      # 强制重新登录
 mi-note -o ./notes   # 指定输出目录
 ```
 
@@ -62,9 +61,10 @@ npx mi-note-export
 |---|---|
 | `-h, --help` | 显示帮助信息 |
 | `-f, --force` | 全量重新同步（忽略增量状态） |
-| `-o, --output <dir>` | 指定输出目录（默认 `output`） |
+| `-o, --output <dir>` | 指定输出目录（默认读取 `.mi-note-export.json`，否则 `output`） |
 | `--login` | 强制重新登录（忽略缓存的 Cookie） |
 | `--delete-id <id>` | 删除指定 ID 的云端笔记（移到回收站，30 天内可恢复） |
+| `--clear-cache` | 清除系统缓存目录（Cookie 和浏览器数据） |
 | `-y, --yes` | 跳过确认提示，直接执行 |
 | `-v, --version` | 显示版本号 |
 
@@ -86,15 +86,36 @@ output/
 └── 2025-01-01_12-00-00.md  # 无标题笔记，以创建时间命名
 ```
 
+## 配置文件
+
+可以在当前工作目录下创建 `.mi-note-export.json` 文件，避免每次都指定 `-o`：
+
+```json
+{ "output": "./my-notes" }
+```
+
+输出目录优先级：`-o` 命令行参数 > `.mi-note-export.json` > 默认值 `output`。
+
 ## 数据目录
 
-工具运行时会在当前工作目录下创建 `.mi-note-export/` 目录，存放：
+### 系统缓存目录
 
-- `.cookie` — 缓存的登录 Cookie
-- `.browser-data/` — Playwright 浏览器持久化数据
-- `.sync-state.json` — 增量同步状态
+Cookie 和 Playwright 浏览器持久化数据存放在系统缓存目录中：
 
-> 建议将 `.mi-note-export/` 加入项目的 `.gitignore`。
+- **macOS**: `~/Library/Caches/mi-note-export/`
+- **Linux**: `$XDG_CACHE_HOME/mi-note-export/` 或 `~/.cache/mi-note-export/`
+- **Windows**: `%LOCALAPPDATA%/mi-note-export/cache/`
+
+包含：
+
+- `cookie` — 缓存的登录 Cookie
+- `browser-data/` — Playwright 浏览器持久化数据（保留设备身份，减少重复验证）
+
+### 输出目录
+
+增量同步状态文件存放在输出目录内：
+
+- `<output>/.sync-state.json` — 记录已同步笔记及其修改时间
 
 ## 已知限制
 
