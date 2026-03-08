@@ -6,12 +6,11 @@ import {
   randomDelay,
   ensureFileDir,
   fileExists,
-  getDataDir,
+  getSyncStateFile,
   ensureDir,
 } from "./utils.js";
 import type { RawNoteEntry, NoteFolder, SyncState } from "./types.js";
 
-const STATE_FILE = join(getDataDir(), ".sync-state.json");
 const SAVE_INTERVAL = 10;
 
 /**
@@ -23,7 +22,7 @@ export async function syncNotes(
   force = false,
 ): Promise<void> {
   // 加载同步状态
-  const state = force ? createEmptyState() : await loadState();
+  const state = force ? createEmptyState() : await loadState(outputDir);
 
   if (state.lastSync && !force) {
     const noteCount = Object.keys(state.notes).length;
@@ -139,7 +138,7 @@ export async function syncNotes(
 
       // 定期保存状态
       if (synced % SAVE_INTERVAL === 0) {
-        await saveState(state);
+        await saveState(state, outputDir);
       }
 
       // 请求间延时
@@ -153,7 +152,7 @@ export async function syncNotes(
   // 保存最终状态
   state.lastSync = Date.now();
   state.folders = folders;
-  await saveState(state);
+  await saveState(state, outputDir);
 
   console.log(`\n
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -194,12 +193,13 @@ async function cleanDeletedNotes(
 /**
  * 加载同步状态
  */
-export async function loadState(): Promise<SyncState> {
-  if (!(await fileExists(STATE_FILE))) {
+export async function loadState(outputDir: string): Promise<SyncState> {
+  const stateFile = getSyncStateFile(outputDir);
+  if (!(await fileExists(stateFile))) {
     return createEmptyState();
   }
   try {
-    const content = await readFile(STATE_FILE, "utf-8");
+    const content = await readFile(stateFile, "utf-8");
     return JSON.parse(content) as SyncState;
   } catch {
     return createEmptyState();
@@ -209,9 +209,9 @@ export async function loadState(): Promise<SyncState> {
 /**
  * 保存同步状态
  */
-export async function saveState(state: SyncState): Promise<void> {
-  await ensureDir(getDataDir());
-  await writeFile(STATE_FILE, JSON.stringify(state, null, 2), "utf-8");
+export async function saveState(state: SyncState, outputDir: string): Promise<void> {
+  await ensureDir(outputDir);
+  await writeFile(getSyncStateFile(outputDir), JSON.stringify(state, null, 2), "utf-8");
 }
 
 /**
@@ -228,8 +228,8 @@ function createEmptyState(): SyncState {
 /**
  * 从同步状态中移除指定笔记，并删除对应的本地文件
  */
-export async function removeNoteFromState(noteId: string): Promise<void> {
-  const state = await loadState();
+export async function removeNoteFromState(noteId: string, outputDir: string): Promise<void> {
+  const state = await loadState(outputDir);
   const noteState = state.notes[noteId];
 
   if (noteState?.filePath && (await fileExists(noteState.filePath))) {
@@ -237,5 +237,5 @@ export async function removeNoteFromState(noteId: string): Promise<void> {
   }
 
   delete state.notes[noteId];
-  await saveState(state);
+  await saveState(state, outputDir);
 }

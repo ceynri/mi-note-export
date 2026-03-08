@@ -1,9 +1,9 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { getDataDir, fileExists, ensureDir } from "./utils.js";
+import { getCacheDir, fileExists, ensureDir } from "./utils.js";
 
-const COOKIE_FILE = join(getDataDir(), ".cookie");
-const BROWSER_DATA_DIR = join(getDataDir(), ".browser-data");
+const COOKIE_FILE = join(getCacheDir(), "cookie");
+const BROWSER_DATA_DIR = join(getCacheDir(), "browser-data");
 const NOTE_URL = "https://i.mi.com/note/h5#/";
 const NOTE_API_BASE = "https://i.mi.com/note/full/page/";
 const LOGIN_TIMEOUT = 300_000;
@@ -166,7 +166,7 @@ async function loadCachedCookie(): Promise<string | null> {
  * 保存 Cookie 到文件
  */
 async function saveCookie(cookie: string): Promise<void> {
-  await ensureDir(getDataDir());
+  await ensureDir(getCacheDir());
   await writeFile(COOKIE_FILE, cookie, "utf-8");
   console.log("💾 Cookie 已缓存到本地");
 }

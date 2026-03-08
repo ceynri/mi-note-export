@@ -1,7 +1,8 @@
 import { mkdir, access } from "node:fs/promises";
-import { dirname, resolve } from "node:path";
+import { dirname, join } from "node:path";
+import { homedir, platform } from "node:os";
 
-const DATA_DIR_NAME = ".mi-note-export";
+const APP_NAME = "mi-note-export";
 
 /**
  * 清理文件名中的非法字符
@@ -69,10 +70,29 @@ export async function ensureFileDir(filePath: string): Promise<void> {
 }
 
 /**
- * 获取数据目录（cwd 下的 .mi-note-export/）
+ * 获取全局缓存目录（跨平台）
+ *
+ * - macOS:   ~/Library/Caches/mi-note-export/
+ * - Linux:   $XDG_CACHE_HOME/mi-note-export/ 或 ~/.cache/mi-note-export/
+ * - Windows: %LOCALAPPDATA%/mi-note-export/cache/
  */
-export function getDataDir(): string {
-  return resolve(process.cwd(), DATA_DIR_NAME);
+export function getCacheDir(): string {
+  const home = homedir();
+  switch (platform()) {
+    case "darwin":
+      return join(home, "Library", "Caches", APP_NAME);
+    case "win32":
+      return join(process.env.LOCALAPPDATA || join(home, "AppData", "Local"), APP_NAME, "cache");
+    default:
+      return join(process.env.XDG_CACHE_HOME || join(home, ".cache"), APP_NAME);
+  }
+}
+
+/**
+ * 获取同步状态文件路径（位于输出目录内）
+ */
+export function getSyncStateFile(outputDir: string): string {
+  return join(outputDir, ".sync-state.json");
 }
 
 export interface CliArgs {

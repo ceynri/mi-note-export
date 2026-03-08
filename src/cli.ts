@@ -21,7 +21,8 @@ async function main(): Promise<void> {
     const cookie = await ensureCookie(args.login);
 
     if (args.deleteId) {
-      await handleDelete(cookie, args.deleteId, args.yes);
+      const outputDir = args.output || "output";
+      await handleDelete(cookie, args.deleteId, outputDir, args.yes);
     } else {
       const outputDir = args.output || "output";
       await syncNotes(cookie, outputDir, args.force);
@@ -35,6 +36,7 @@ async function main(): Promise<void> {
 async function handleDelete(
   cookie: string,
   noteId: string,
+  outputDir: string,
   skipConfirm = false,
 ): Promise<void> {
   console.log(`🔍 正在获取笔记信息 (ID: ${noteId})...`);
@@ -64,7 +66,7 @@ async function handleDelete(
 
   console.log("🗑️  正在删除...");
   await deleteNote(cookie, noteId);
-  await removeNoteFromState(noteId);
+  await removeNoteFromState(noteId, outputDir);
 
   console.log("✅ 笔记已移到回收站（30 天内可在小米云服务中恢复）");
 }
