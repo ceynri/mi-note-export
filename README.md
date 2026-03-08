@@ -53,13 +53,15 @@ npx mi-note-export
 | `-o, --output <dir>` | 指定输出目录（默认 `output`） |
 | `--login` | 强制重新登录（忽略缓存的 Cookie） |
 | `--delete-id <id>` | 删除指定 ID 的云端笔记（移到回收站，30 天内可恢复） |
+| `-y, --yes` | 跳过确认提示，直接执行 |
+| `-v, --version` | 显示版本号 |
 
 ## 认证流程
 
 1. **首次运行**：通过 Playwright 打开 Chromium 浏览器 → 用户手动登录小米账号 → 自动提取并缓存 Cookie
 2. **后续运行**：读取缓存的 Cookie → 验证有效性 → 有效则直接使用，过期则自动打开浏览器重新登录
 
-浏览器身份数据持久化在 `.mi-note-export/.browser-data/` 目录，后续登录时小米会识别为同一设备，通常不再要求手机验证码。
+浏览器身份数据持久化在系统缓存目录（见下方"数据目录"说明），后续登录时小米会识别为同一设备，通常不再要求手机验证码。
 
 ## 输出结构
 
@@ -109,8 +111,7 @@ mi-note-export/
 │   ├── sync.ts       # 增量同步逻辑与状态管理
 │   ├── types.ts      # 类型定义
 │   └── utils.ts      # 通用工具函数
-├── skill/
-│   └── SKILL.md      # AI 编程助手 Skill 定义
+├── SKILL.md          # AI 编程助手 Skill 定义
 ├── dist/             # 编译产物（git ignored）
 ├── tsconfig.json
 └── package.json
@@ -118,9 +119,9 @@ mi-note-export/
 
 ## AI Skill
 
-本项目提供了 AI 编程助手的 Skill 定义文件（`skill/SKILL.md`），可让 AI 助手直接帮你执行笔记导出操作。
+本项目提供了 AI 编程助手的 Skill 定义文件（`SKILL.md`），可让 AI 助手直接帮你执行笔记导出操作。
 
-将 `skill/` 目录复制到你的项目中对应的 Skill 目录即可使用（如 `.agents/skills/mi-note-export/`）。
+通过 `npx skills add ceynri/mi-note-export` 安装，或手动将 `SKILL.md` 复制到你的项目的 Skill 目录中即可使用。
 
 ## License
 
