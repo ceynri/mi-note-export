@@ -1,0 +1,20 @@
+---
+description: 
+alwaysApply: true
+enabled: true
+updatedAt: 2026-03-08T15:52:39.663Z
+provider: 
+---
+
+# 开发规范
+
+## 文档同步
+
+修改 CLI 选项、数据路径、输出格式等用户可感知的行为后，必须同步更新：
+
+- `README.md` 中的对应章节
+- `SKILL.md` 中的对应描述
+
+## 单元测试
+
+修改 `src/converter.ts` 或 `src/utils.ts` 时，必须在 `tests/` 下添加或更新对应测试用例。运行 `pnpm test` 确认通过。
