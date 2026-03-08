@@ -15,14 +15,16 @@
     "build": "tsc",
     "start": "node dist/cli.js",
     "dev": "tsc --watch",
+    "test": "node --import tsx/esm --test tests/*.test.ts",
     "postinstall": "npx playwright install chromium --with-deps 2>/dev/null || echo '⚠️ Playwright chromium 安装失败，请手动运行: npx playwright install chromium'"
   },
   "dependencies": {
     "playwright": "^1.52.0"
   },
   "devDependencies": {
-    "typescript": "^5.7.0",
-    "@types/node": "^22.0.0"
+    "@types/node": "^22.0.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.7.0"
   },
   "engines": {
     "node": ">=18.0.0"
