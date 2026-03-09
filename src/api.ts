@@ -66,9 +66,9 @@ export async function getAllNotes(
 
     process.stdout.write(`\r📋 已获取 ${allEntries.length} 条笔记...`);
 
-    if (data.lastPage) break;
+    syncTag = data.syncTag ?? syncTag;
 
-    syncTag = data.syncTag ?? "";
+    if (data.lastPage) break;
     if (!syncTag) break;
 
     await randomDelay(300);
