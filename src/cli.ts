@@ -5,7 +5,7 @@ import { createRequire } from "node:module";
 import { rm } from "node:fs/promises";
 import { parseArgs, printHelp, getCacheDir, fileExists, loadConfigFile } from "./utils.js";
 import { ensureCookie } from "./auth.js";
-import { syncNotes, loadState, removeNoteFromState } from "./sync.js";
+import { syncNotes, removeNoteFromState } from "./sync.js";
 import { getNoteDetail, deleteNote } from "./api.js";
 import { parseNoteEntry } from "./converter.js";
 
@@ -84,12 +84,7 @@ async function handleDelete(
   }
 
   console.log("🗑️  正在删除...");
-  const state = await loadState(outputDir);
-  const syncTag = state.syncTag;
-  if (!syncTag) {
-    throw new Error("未找到 syncTag，请先运行一次同步（不带 --delete-id）以获取最新状态");
-  }
-  await deleteNote(cookie, noteId, syncTag);
+  await deleteNote(cookie, noteId, raw.tag);
   await removeNoteFromState(noteId, outputDir);
 
   console.log("✅ 笔记已移到回收站（30 天内可在小米云服务中恢复）");

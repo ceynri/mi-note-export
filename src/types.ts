@@ -7,6 +7,7 @@ export interface RawNoteEntry {
   snippet?: string;
   createDate?: number;
   modifyDate?: number;
+  tag?: string;
   extraInfo?: string | Record<string, unknown>;
   setting?: { data?: RawNoteFile[] };
   files?: RawNoteFile[];

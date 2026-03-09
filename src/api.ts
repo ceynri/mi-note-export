@@ -207,13 +207,22 @@ function extractServiceToken(cookie: string): string {
 export async function deleteNote(
   cookie: string,
   noteId: string,
-  syncTag: string,
+  noteTag?: string,
 ): Promise<void> {
+  if (!noteTag) {
+    // 获取笔记详情中的 tag（笔记级别的同步标记），用于删除请求
+    const entry = await getNoteDetail(cookie, noteId);
+    noteTag = entry.tag;
+    if (!noteTag) {
+      throw new Error("笔记详情中未找到 tag 字段，无法执行删除");
+    }
+  }
+
   const serviceToken = extractServiceToken(cookie);
 
   const url = `${API_BASE}/note/full/${noteId}/delete`;
   const body = new URLSearchParams({
-    tag: syncTag,
+    tag: noteTag,
     purge: "false",
     serviceToken,
   });
@@ -235,9 +244,14 @@ export async function deleteNote(
     result: string;
     code: number;
     description: string;
+    data?: { conflict?: boolean };
   };
 
   if (json.result !== "ok") {
     throw new Error(`删除笔记失败: ${json.description ?? JSON.stringify(json)}`);
+  }
+
+  if (json.data?.conflict) {
+    throw new Error("删除笔记时发生冲突，请重试");
   }
 }
