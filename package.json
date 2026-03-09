@@ -1,6 +1,6 @@
 {
   "name": "mi-note-export",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "从小米云服务笔记（i.mi.com）批量导出 Markdown 文件",
   "type": "module",
   "bin": {
