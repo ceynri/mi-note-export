@@ -15,11 +15,12 @@ provider:
 ```
 .agents/
 ├── agents/    # Agent 定义
+├── commands/  # Command 定义（斜杠命令）
 ├── rules/     # 项目规则（.mdc）
 └── skills/    # Skill 定义
 ```
 
-`.codebuddy/` 下的 `agents/`、`rules/`、`skills/` 均为指向 `.agents/` 对应子目录的软链接，不要直接在 `.codebuddy/` 下创建这些目录的实体文件。
+`.codebuddy/` 下的 `agents/`、`commands/`、`rules/`、`skills/` 均为指向 `.agents/` 对应子目录的软链接，不要直接在 `.codebuddy/` 下创建这些目录的实体文件。
 
 ## 文档同步
 
