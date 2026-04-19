@@ -35,7 +35,7 @@ npx mi-note-export --help                   # 查看所有可用选项
 
 遇到其他不适用以上指令的场景时，优先通过 `--help` 查阅是否有合适的选项。
 
-> ⚠️ 首次执行时会自动下载工具及其依赖 Playwright Chromium（约 200+ MB），需提醒用户确认。
+> ⚠️ 首次使用需下载 Playwright Chromium（约 200+ MB）。通过 `npm install` 安装时会自动执行 `postinstall` 脚本；通过 `npx` 直接运行时若提示 Chromium 缺失，需手动执行 `npx playwright install chromium`。
 
 首次运行会自动打开 Chromium 浏览器，用户需手动登录小米账号，登录成功后自动提取 Cookie 并缓存。
 
