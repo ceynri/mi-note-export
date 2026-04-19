@@ -9,7 +9,7 @@ Batch export all notes from Xiaomi Cloud Notes (i.mi.com) as Markdown files.
 - Automatically fetch all notes and convert to Markdown
 - Preserve headings, lists, checkboxes, blockquotes, horizontal rules, etc.
 - Download attachments (images, audio, video)
-- Incremental sync (only fetch new/modified notes)
+- **Content-hash-based incremental sync** (only fetch notes with content changes; won't re-export even if local file was moved)
 - Automatically clean up notes deleted from the cloud
 - Delete specific cloud notes (move to trash)
 - Organize notes by folder
@@ -115,7 +115,7 @@ Contents:
 
 The incremental sync state file is stored inside the output directory:
 
-- `<output>/.sync-state.json` — Tracks synced notes and their modification dates
+- `<output>/.sync-state.json` — Tracks synced notes, modification dates, and content hashes (used to detect content changes)
 
 ## Known Limitations
 

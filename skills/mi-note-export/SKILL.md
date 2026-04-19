@@ -24,12 +24,14 @@ description: 从小米云服务笔记批量导出 Markdown 文件，支持删除
 通过 `npx` 直接执行，无需提前安装。如已配置 `.mi-note-export.json`，可省略 `-o`：
 
 ```bash
-npx mi-note-export                          # 增量同步（使用配置文件中的输出目录）
+npx mi-note-export                          # 增量同步（基于内容哈希，使用配置文件中的输出目录）
 npx mi-note-export -o <output>              # 增量同步（手动指定输出目录）
 npx mi-note-export --force                  # 全量重新同步
 npx mi-note-export --delete-id <noteId> -y  # 删除指定云端笔记
 npx mi-note-export --help                   # 查看所有可用选项
 ```
+
+增量同步基于内容哈希：即使本地文件被移走，只要云端内容没变，就不会重新导出。
 
 遇到其他不适用以上指令的场景时，优先通过 `--help` 查阅是否有合适的选项。
 
@@ -48,7 +50,7 @@ npx mi-note-export --help                   # 查看所有可用选项
 ## 运行时数据
 
 - **系统缓存目录**（macOS `~/Library/Caches/mi-note-export/`、Linux `~/.cache/mi-note-export/`、Windows `%LOCALAPPDATA%/mi-note-export/cache/`）：存放 Cookie 缓存和浏览器身份数据
-- **输出目录内** `<output>/.sync-state.json`：增量同步状态文件
+- **输出目录内** `<output>/.sync-state.json`：增量同步状态文件（记录笔记状态、修改时间和内容哈希）
 
 ## 输出格式
 

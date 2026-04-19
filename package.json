@@ -16,6 +16,7 @@
     "start": "node dist/cli.js",
     "dev": "tsc --watch",
     "test": "node --import tsx/esm --test tests/*.test.ts",
+    "release": "node scripts/release.mjs",
     "postinstall": "npx playwright install chromium --with-deps 2>/dev/null || echo '⚠️ Playwright chromium 安装失败，请手动运行: npx playwright install chromium'"
   },
   "dependencies": {

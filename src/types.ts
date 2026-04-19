@@ -64,6 +64,7 @@ export interface SyncNoteState {
   modifyDate?: number;
   filePath: string | null;
   empty?: boolean;
+  contentHash?: string;
 }
 
 /** 同步状态 */

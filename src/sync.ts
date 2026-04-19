@@ -1,4 +1,5 @@
 import { readFile, writeFile, rm } from "node:fs/promises";
+import { createHash } from "node:crypto";
 import { join } from "node:path";
 import { getAllNotes, getNoteDetail, downloadFile } from "./api.js";
 import { parseNoteEntry, noteToMarkdown, getNoteFilePath } from "./converter.js";
@@ -12,6 +13,13 @@ import {
 import type { RawNoteEntry, SyncState } from "./types.js";
 
 const SAVE_INTERVAL = 10;
+
+/**
+ * 计算字符串的 SHA-256 哈希值
+ */
+function computeHash(content: string): string {
+  return createHash("sha256").update(content, "utf-8").digest("hex");
+}
 
 /**
  * 执行笔记同步
@@ -52,18 +60,27 @@ export async function syncNotes(
 
   for (const entry of entries) {
     const existing = state.notes[String(entry.id)];
-    const isUpToDate =
-      !force &&
-      existing &&
-      !existing.empty &&
-      existing.modifyDate !== undefined &&
-      entry.modifyDate !== undefined &&
-      existing.modifyDate >= entry.modifyDate;
 
-    if (isUpToDate) {
-      skipped++;
-    } else {
+    // 判断是否需要同步：
+    // 1. force 模式：同步所有
+    // 2. 无现有记录：需要同步
+    // 3. 空笔记记录：需要同步（之前跳过，现在可能想重新检查）
+    // 4. 有 contentHash：信任该记录，跳过（即使本地文件不存在）
+    // 5. 无 contentHash（旧版本升级）：需要同步以计算哈希
+    // 6. modifyDate 变化：需要同步
+    const needsSync =
+      force ||
+      !existing ||
+      existing.empty ||
+      !existing.contentHash ||
+      (existing.modifyDate !== undefined &&
+        entry.modifyDate !== undefined &&
+        existing.modifyDate < entry.modifyDate);
+
+    if (needsSync) {
       toSync.push(entry);
+    } else {
+      skipped++;
     }
   }
 
@@ -107,11 +124,24 @@ export async function syncNotes(
         continue;
       }
 
+      // 计算内容哈希，与已有状态比较
+      const contentHash = computeHash(markdown);
+      const existing = state.notes[note.id];
+      if (existing && existing.contentHash === contentHash) {
+        // 内容未变化，跳过导出，但更新 modifyDate 以记录本次检查
+        state.notes[note.id] = {
+          ...existing,
+          modifyDate: note.modifyDate,
+        };
+        skipped++;
+        continue;
+      }
+
       // 计算保存路径
       const filePath = getNoteFilePath(note, folders, outputDir);
 
       // 删除旧文件（如果路径变了）
-      const oldPath = state.notes[note.id]?.filePath;
+      const oldPath = existing?.filePath;
       if (oldPath && oldPath !== filePath && (await fileExists(oldPath))) {
         await rm(oldPath, { force: true });
       }
@@ -126,12 +156,13 @@ export async function syncNotes(
         await downloadFile(cookie, file.fileId, assetPath);
       }
 
-      // 更新状态
+      // 更新状态（包含内容哈希）
       state.notes[note.id] = {
         id: note.id,
         subject: note.subject,
         modifyDate: note.modifyDate,
         filePath,
+        contentHash,
       };
 
       synced++;
