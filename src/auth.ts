@@ -37,6 +37,11 @@ export async function ensureCookie(forceLogin = false): Promise<string> {
 
 /**
  * 通过 Playwright 打开浏览器让用户登录，获取 Cookie
+ *
+ * 浏览器选择策略：
+ * 1. 优先用系统已安装的 Chrome（channel: "chrome"）——真签名，避免 Playwright
+ *    自带 Chromium 在 macOS 上因 ad-hoc 签名导致的 Mach rendezvous 失败。
+ * 2. 系统无 Chrome 时回退到 Playwright 自带 Chromium。
  */
 async function loginAndGetCookie(): Promise<string> {
   console.log("🌐 正在打开浏览器，请在浏览器中登录小米账号...");
@@ -44,10 +49,23 @@ async function loginAndGetCookie(): Promise<string> {
   const { chromium } = await import("playwright");
 
   // 使用持久化上下文：复用浏览器身份，避免每次都是新设备触发风控
-  const context = await chromium.launchPersistentContext(BROWSER_DATA_DIR, {
+  const launchOptions = {
     headless: false,
-    channel: "chromium",
-  });
+  } as const;
+
+  let context;
+  try {
+    context = await chromium.launchPersistentContext(BROWSER_DATA_DIR, {
+      ...launchOptions,
+      channel: "chrome",
+    });
+  } catch (err) {
+    console.log("⚠️ 未检测到系统 Chrome，回退到 Playwright 自带 Chromium");
+    context = await chromium.launchPersistentContext(BROWSER_DATA_DIR, {
+      ...launchOptions,
+      channel: "chromium",
+    });
+  }
   const page = context.pages()[0] || (await context.newPage());
 
   await page.goto(NOTE_URL);
